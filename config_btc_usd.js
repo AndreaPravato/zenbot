@@ -5,9 +5,8 @@ c.assets = [
 ]
 c.currencies = [
   "USD",
-  "USDT",
   "BTC"
 ]
 
 // default selector for indicators, etc
-c.default_selector = "gdax.BTC-USD"
+c.default_selector = "bitfinex.BTC-USD"
