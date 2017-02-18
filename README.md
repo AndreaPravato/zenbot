@@ -21,11 +21,11 @@ I'm forking it to trade on Bitfinex.
 
 ### 1. Requirements: [Node.js](https://nodejs.org/) and [MongoDB](https://www.mongodb.com/download-center)
 
-### 2. Install zenbot 3:
+### 2. Install zenbot 3 (Fedora 25):
 
 ```
 sudo dnf install nodejs nodejs-devel mongodb-org mongodb-org-server npm
-git clone https://github.com/carlos8f/zenbot.git
+git clone https://github.com/nedievas/zenbot
 cd zenbot
 npm install
 # optional, installs the `zenbot` binary in /usr/local/bin:
