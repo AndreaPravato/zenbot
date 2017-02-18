@@ -5,7 +5,8 @@ var assert = require('assert')
 var n = require('numbro')
 var tb = require('timebucket')
 var sig = require('sig')
-var CoinbaseExchange = require('coinbase-exchange')
+//Bitfinex REST
+var BFX = require('bitfinex-api-node')
 
 module.exports = function container (get, set, clear) {
   var c = get('config')
@@ -17,25 +18,28 @@ module.exports = function container (get, set, clear) {
   var options = get('options')
   var client
   var start = new Date().getTime()
+  //bfx orders new or active orders?
   function onOrder (err, resp, order) {
     if (err) return get('logger').error('order err', err, resp, order, {feed: 'errors'})
     if (resp.statusCode !== 200) {
       console.error(order)
       return get('logger').error('non-200 status: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: order}})
     }
-    get('logger').info('gdax', c.default_selector.grey, ('order-id: ' + order.id).cyan, {data: {order: order}})
+    get('logger').info('bitfinex', c.default_selector.grey, ('order-id: ' + order_id).cyan, {data: {order: order}})
+
+//bfx order status?
     function getStatus () {
-      client.getOrder(order.id, function (err, resp, order) {
-        if (err) return get('logger').error('getOrder err', err)
+      client.order_status(order_id, function (err, resp, order) {
+        if (err) return get('logger').error('order_status err', err)
         if (resp.statusCode !== 200) {
           console.error(order)
-          return get('logger').error('non-200 status from getOrder: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: order}})
+          return get('logger').error('non-200 status from order_status: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: order}})
         }
-        if (order.status === 'done') {
-          return get('logger').info('gdax', c.default_selector.grey, ('order ' + order.id + ' done: ' + order.done_reason).cyan, {data: {order: order}})
+        if (order.status === 'true') {
+          return get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order_id + ' done: ' + order.is_live).cyan, {data: {order: order}})
         }
         else {
-          get('logger').info('gdax', c.default_selector.grey, ('order ' + order.id + ' ' + order.status).cyan, {data: {order: order}})
+          get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order_id + ' ' + order.status).cyan, {data: {order: order}})
           setTimeout(getStatus, 5000)
         }
       })
@@ -63,7 +67,7 @@ module.exports = function container (get, set, clear) {
       rs.check_period = '1m' // speed to trigger actions at
       rs.selector = 'data.trades.' + c.default_selector
       rs.trade_pct = 0.98 // trade % of current balance
-      rs.fee_pct = 0.0025 // apply 0.25% taker fee
+      rs.fee_pct = 0.0020 // apply 0.25% taker fee
       var products = get('exchanges.' + rs.exchange).products
       products.forEach(function (product) {
         if (product.asset === rs.asset && product.currency === rs.currency) {
@@ -72,9 +76,9 @@ module.exports = function container (get, set, clear) {
       })
       if (!rs.product) return cb(new Error('no product for ' + c.default_selector))
       rs.min_trade = n(rs.product.min_size).multiply(1).value()
-      rs.sim_start_balance = 10000
-      rs.min_double_wait = 86400000 * 1 // wait in ms after action before doing same action
-      rs.min_reversal_wait = 86400000 * 0.75 // wait in ms after action before doing opposite action
+      rs.sim_start_balance = 1000
+      rs.min_double_wait = 14400000 * 1 // wait in ms after action before doing same action 4h = 14400000 24h = 86400000
+      rs.min_reversal_wait = 14400000 * 0.75 // wait in ms after action before doing opposite action
       rs.min_performance = -0.015 // abort trades with lower performance score
       if (first_run) {
         delete rs.real_trade_warning
@@ -83,7 +87,7 @@ module.exports = function container (get, set, clear) {
     },
     // sync balance if key is present and we're in the `run` command
     function (tick, trigger, rs, cb) {
-      if (get('command') !== 'run' || !c.gdax_key) {
+        if (get('command') !== 'run' || !c.bitfinex_key) {
         rs.start_balance = rs.sim_start_balance
         // add timestamp for simulations
         if (c.reporter_cols.indexOf('timestamp') === -1) {
@@ -99,23 +103,24 @@ module.exports = function container (get, set, clear) {
         return cb()
       }
       if (!client) {
-        client = new CoinbaseExchange.AuthenticatedClient(c.gdax_key, c.gdax_secret, c.gdax_passphrase)
+        client = new BFX.APIRest(c.bitfinex_key, c.bitfinex_secret)
       }
-      client.getAccounts(function (err, resp, accounts) {
+      
+      client.wallet_balances(function (err, resp, balances) {
         if (err) throw err
         if (resp.statusCode !== 200) {
-          console.error(accounts)
-          get('logger').error('non-200 status from exchange: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: accounts}})
+         console.error(balances)
+         get('logger').error('non-200 status from exchange: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: balances}})
           return cb()
         }
         rs.balance = {}
-        accounts.forEach(function (account) {
+        balances.forEach(function (account) {
           if (account.currency === rs.currency) {
-            rs.balance[rs.currency] = n(account.balance).value()
+            rs.balance[rs.currency] = n(account.amount).value()
           }
-          else if (account.currency === rs.asset) {
-            rs.balance[rs.asset] = n(account.balance).value()
-          }
+         else if (account.currency === rs.asset) {
+            rs.balance[rs.asset] = n(account.amount).value()
+       }  
         })
         if (first_run) {
           sync_start_balance = true
@@ -533,7 +538,10 @@ module.exports = function container (get, set, clear) {
         trigger(trade)
         if (client) {
           var params = {
-            type: 'market',
+/* 'exchange market' / 'exchange limit' are exchange orders,
+others are margin trading orders ('market' / 'limit').
+    PS. For now it's only market orders*/           
+            type: 'exchange market',
             size: n(size).format('0.000000'),
             product_id: rs.asset + '-' + rs.currency
           }

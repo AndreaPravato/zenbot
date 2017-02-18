@@ -6,28 +6,41 @@ c.mongo_url = "mongodb://" + (process.env.MONGODB_PORT_27017_TCP_ADDR || "localh
 c.mongo_username = null // normally not needed
 c.mongo_password = null
 
-c.gdax_key = '' // TO ENABLE BOT TRADING: set this to GDAX api key,
-c.gdax_secret = '' // set this to GDAX api secret,
-c.gdax_passphrase = '' // set this to GDAX api passphrase.
+//Bitfinex trading
+c.bitfinex_key = ''
+c.bitfinex_secret = ''
+
 c.trade_log = true // log new trades as they come in.
 
 // watch these exchanges
 c.watch_exchanges = [
-  //"bitfinex",
-  "gdax",
+  "bitfinex",
+  //"gdax", //do you need to watch others?
   //"kraken",
   //"poloniex"
 ]
 
 // selector for indicators, trading, etc
-c.default_selector = "gdax.BTC-USD"
+c.default_selector = "bitfinex.BTC-USD"
 
 // add selectors in the format "{exchange-slug}.{asset}-{currency}" to graph them
 c.graph_selectors = [
   c.default_selector,
-  "gdax.ETH-BTC",
-  "gdax.ETH-USD"
+  "bitfinex.ETH-BTC",
+  "bitfinex.ETH-USD",
+  "bitfinex.ETC-BTC",
+  "bitfinex.ETC-USD",
+  "bitfinex.BFX-BTC",
+  "bitfinex.BFX-USD",
+  "bitfinex.ZEC-BTC",
+  "bitfinex.ZEC-USD",
+  "bitfinex.XMR-BTC",
+  "bitfinex.XMR-USD",
+  "bitfinex.RRT-BTC",
+  "bitfinex.RRT-USD",
+  "bitfinex.LTC-BTC",
+  "bitfinex.LTC-USD"
 ]
 
 // trade logic
-c.logic = require('./default_logic')
+c.logic = require('./bitfinex_logic')
