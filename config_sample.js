@@ -21,25 +21,25 @@ c.watch_exchanges = [
 ]
 
 // selector for indicators, trading, etc
-c.default_selector = "bitfinex.BTCUSD"
+c.default_selector = "bitfinex.BTC-USD"
 
 // add selectors in the format "{exchange-slug}.{asset}-{currency}" to graph them
 c.graph_selectors = [
   c.default_selector,
-  "bitfinex.ETHBTC",
-  "bitfinex.ETHUSD",
-  "bitfinex.ETCBTC",
-  "bitfinex.ETCUSD",
-  "bitfinex.BFXBTC",
-  "bitfinex.BFXUSD",
-  "bitfinex.ZECBTC",
-  "bitfinex.ZECUSD",
-  "bitfinex.XMRBTC",
-  "bitfinex.XMRUSD",
-  "bitfinex.RRTBTC",
-  "bitfinex.RRTUSD",
-  "bitfinex.LTCBTC",
-  "bitfinex.LTCUSD"
+  "bitfinex.ETH-BTC",
+  "bitfinex.ETH-USD",
+  "bitfinex.ETC-BTC",
+  "bitfinex.ETC-USD",
+  "bitfinex.BFX-BTC",
+  "bitfinex.BFX-USD",
+  "bitfinex.ZEC-BTC",
+  "bitfinex.ZEC-USD",
+  "bitfinex.XMR-BTC",
+  "bitfinex.XMR-USD",
+  "bitfinex.RRT-BTC",
+  "bitfinex.RRT-USD",
+  "bitfinex.LTC-BTC",
+  "bitfinex.LTC-USD"
 ]
 
 // trade logic
