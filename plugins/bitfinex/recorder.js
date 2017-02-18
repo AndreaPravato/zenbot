@@ -41,7 +41,7 @@ module.exports = function container (get, set, clear) {
               currency: product.currency,
               size: n(trade.amount).value(),
               price: n(trade.price).value(),
-              side: trade.side ? 'sell' : 'buy',
+              side: trade.type,
               exchange: x.name
             }
             map('trade', obj)
