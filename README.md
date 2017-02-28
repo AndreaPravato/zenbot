@@ -17,7 +17,9 @@ I'm forking it to trade on Bitfinex.
 * ...heavily testing
 
 Known issues:
-* occasionaly getting 'cannot read property 'map' of undefined' error in recorder.js and exiting with code 1.
+* occasionaly getting 'cannot read property 'map' of undefined' error in recorder.js or backfiller.js and exiting with code 1.
+* web console does not display trade arrows in sim. (Arrows are displayed in trade though.) 
+
 
 ## Quick-start
 
