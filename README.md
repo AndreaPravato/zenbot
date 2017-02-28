@@ -16,7 +16,7 @@ I'm forking it to trade on Bitfinex.
 * Trading is broken (trying to fix it)
 * ...heavily testing
 
-Know issues:
+Known issues:
 * occasionaly getting 'cannot read property 'map' of undefined' error in recorder.js and exiting with code 1.
 
 ## Quick-start
