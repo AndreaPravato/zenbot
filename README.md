@@ -11,10 +11,9 @@
 ## Current State of Development
 
 I'm forking it to trade on Bitfinex.
-* Backtesting is working
+* Backfilling is working
 * Network IP is provided for easier remote viewing
-* Trading is broken (trying to fix it)
-* ...heavily testing
+* ...heavily testing. Sim is OK. Trading not tested.
 
 Known issues:
 * occasionaly getting 'cannot read property 'map' of undefined' error in recorder.js or backfiller.js and exiting with code 1.
