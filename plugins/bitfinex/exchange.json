@@ -1,7 +1,9 @@
 {
   "name": "bitfinex",
   "rest_url": "https://api.bitfinex.com/v1",
-  "backfill_limit": 100,
+  "backfill_limit": 49999,
+  "backfill_timeout": 5000,
+  "record_timeout": 5000,
   "products": [
     {
       "id":"btcusd",
@@ -9,7 +11,7 @@
       "currency":"USD",
       "min_size":0.01,
       "max_size":2000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"BTC/USD"
     },
     {
@@ -18,16 +20,16 @@
       "currency":"USD",
       "min_size":0.1,
       "max_size":5000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"ETH/USD"
     },
 	{
       "id":"ethbtc",
       "asset":"ETH",
       "currency":"BTC",
-      "min_size":0.1,
+      "min_size":0.01,
       "max_size":5000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"ETH/BTC"
     },
     {
@@ -36,16 +38,16 @@
       "currency":"USD",
       "min_size":0.1,
       "max_size":5000,
-      "increment":0.00001,
+      "increment":0.01,
       "label":"LTC/USD"
     },
     {
       "id":"ltcbtc",
       "asset":"LTC",
       "currency":"BTC",
-      "min_size":0.01,
+      "min_size":0.1,
       "max_size":5000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"LTC/BTC"
     },
     {
@@ -54,7 +56,7 @@
       "currency":"BTC",
       "min_size":0.1,
       "max_size":100000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"ETC/BTC"
     },
     {
@@ -63,7 +65,7 @@
       "currency":"USD",
       "min_size":0.1,
       "max_size":100000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"ETC/USD"
     },
     {
@@ -71,8 +73,8 @@
       "asset":"BFX",
       "currency":"USD",
       "min_size":0.1,
-      "max_size":5000,
-      "increment":0.00001,
+      "max_size":50000,
+      "increment":0.0001,
       "label":"BFX/USD"
     },
     {
@@ -90,8 +92,8 @@
       "currency":"USD",
       "min_size":0.1,
       "max_size":100000,
-      "increment":0.00001,
-      "label":"RRT/BTC"
+      "increment":0.0001,
+      "label":"RRT/USD"
     },
     {
       "id":"rrtbtc",
@@ -99,16 +101,16 @@
       "currency":"BTC",
       "min_size":0.1,
       "max_size":100000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"RRT/BTC"
-    }, 
+    },
     {
       "id":"zecusd",
       "asset":"ZEC",
       "currency":"USD",
       "min_size":0.0001,
       "max_size":20000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"ZEC/USD"
     },
     {
@@ -117,16 +119,16 @@
       "currency":"BTC",
       "min_size":0.0001,
       "max_size":20000,
-      "increment":0.00001,
-      "label":"ZEC/BTC"
-    }, 
+      "increment":0.0001,
+      "label":"BFX/BTC"
+    },
     {
       "id":"xmrusd",
-      "asset":"XMR",
+      "asset":"XMr",
       "currency":"USD",
       "min_size":0.1,
       "max_size":5000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"XMR/USD"
     },
     {
@@ -135,8 +137,8 @@
       "currency":"BTC",
       "min_size":0.1,
       "max_size":5000,
-      "increment":0.00001,
+      "increment":0.0001,
       "label":"XMR/BTC"
-    } 
+    }
   ]
 }
