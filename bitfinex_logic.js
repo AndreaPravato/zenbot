@@ -6,6 +6,7 @@ var n = require('numbro')
 var tb = require('timebucket')
 var sig = require('sig')
 //Bitfinex REST
+var _ = require('lodash')
 var BFX = require('bitfinex-api-node')
 
 module.exports = function container (get, set, clear) {
@@ -18,28 +19,18 @@ module.exports = function container (get, set, clear) {
   var options = get('options')
   var client
   var start = new Date().getTime()
-  //bfx orders new or active orders?
-  function onOrder (err, resp, order) {
-    if (err) return get('logger').error('order err', err, resp, order, {feed: 'errors'})
-    if (resp.statusCode !== 200) {
-      console.error(order)
-      return get('logger').error('non-200 status: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: order}})
-    }
-    get('logger').info('bitfinex', c.default_selector.grey, ('order-id: ' + order_id).cyan, {data: {order: order}})
-
-//bfx order status?
-    function getStatus () {
-      client.order_status(order_id, function (err, resp, order) {
-        if (err) return get('logger').error('order_status err', err)
-        if (resp.statusCode !== 200) {
-          console.error(order)
-          return get('logger').error('non-200 status from order_status: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: order}})
-        }
-        if (order.status === 'true') {
-          return get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order_id + ' done: ' + order.is_live).cyan, {data: {order: order}})
+ function onOrder (err, /* resp,*/ order) {
+    if (err) return get('logger').error('order err', err, /*resp,*/ order, {feed: 'errors'})
+    get('logger').info('bitfinex', c.default_selector.grey, ('order-id: ' + order.id).cyan, {data: {order: order}})
+//Bitfinex order status
+  function getStatus () {
+      client.order_status(order.id, function (err, /*resp,*/ order) {
+        if (err) return get('logger').error('order status err', err)
+        if (order.is_live === false) {
+          return get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' done').cyan, {data: {order: order}})
         }
         else {
-          get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order_id + ' ' + order.status).cyan, {data: {order: order}})
+          get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' ' + order.remaining_amount).cyan, {data: {order: order}})
           setTimeout(getStatus, 5000)
         }
       })
@@ -60,14 +51,14 @@ module.exports = function container (get, set, clear) {
         get('logger').info('trader', c.default_selector.grey, get_tick_str(tick.id), 'running logic'.grey, rs.asset.grey, rs.currency.grey, {feed: 'trader'})
       }
       rs.rsi_query_limit = 100 // RSI initial value lookback
-      rs.rsi_periods = 26 // RSI smoothing factor
-      rs.rsi_period = '5m' // RSI tick size
-      rs.rsi_up = 65 // upper RSI threshold
-      rs.rsi_down = 28 // lower RSI threshold
+      rs.rsi_periods = 7 // RSI smoothing factor 26 14 7
+      rs.rsi_period = '5m' // RSI tick size 5m
+      rs.rsi_up = 60 // upper RSI threshold 65 80
+      rs.rsi_down = 20 // lower RSI threshold 20 25 28
       rs.check_period = '1m' // speed to trigger actions at
       rs.selector = 'data.trades.' + c.default_selector
       rs.trade_pct = 0.98 // trade % of current balance
-      rs.fee_pct = 0.0020 // apply 0.25% taker fee
+      rs.fee_pct = 0.0020 // apply 0.20% taker fee
       var products = get('exchanges.' + rs.exchange).products
       products.forEach(function (product) {
         if (product.asset === rs.asset && product.currency === rs.currency) {
@@ -77,8 +68,8 @@ module.exports = function container (get, set, clear) {
       if (!rs.product) return cb(new Error('no product for ' + c.default_selector))
       rs.min_trade = n(rs.product.min_size).multiply(1).value()
       rs.sim_start_balance = 1000
-      rs.min_double_wait = 14400000 * 1 // wait in ms after action before doing same action 4h = 14400000 24h = 86400000
-      rs.min_reversal_wait = 14400000 * 0.75 // wait in ms after action before doing opposite action
+      rs.min_double_wait = 86400000 * 1 // wait in ms after action before doing same action 15m = 900000; 30m = 1800000; 1h = 3600000; 4h = 14400000; 6h = 21600000; 12h = 43200000; 24h = 86400000; 
+      rs.min_reversal_wait = 86400000 * 0.75 // wait in ms after action before doing opposite action
       rs.min_performance = -0.015 // abort trades with lower performance score
       if (first_run) {
         delete rs.real_trade_warning
@@ -105,21 +96,16 @@ module.exports = function container (get, set, clear) {
       if (!client) {
         client = new BFX.APIRest(c.bitfinex_key, c.bitfinex_secret)
       }
-      
-      client.wallet_balances(function (err, resp, balances) {
-        if (err) throw err
-        if (resp.statusCode !== 200) {
-         console.error(balances)
-         get('logger').error('non-200 status from exchange: ' + resp.statusCode, {data: {statusCode: resp.statusCode, body: balances}})
-          return cb()
-        }
+       client.wallet_balances(function (err, wallets) {
         rs.balance = {}
-        balances.forEach(function (account) {
-          if (account.currency === rs.currency) {
-            rs.balance[rs.currency] = n(account.amount).value()
+// May use 'exchange' or 'trading' wallet balances
+     var accounts =  _(wallets).filter(function (wallets) { return wallets.type === c.wallet }).map(function (account) { 
+          //console.log(rs);
+          if (account.currency.toUpperCase() === rs.currency) {
+            rs.balance[rs.currency] = n(account.available).value()
           }
-         else if (account.currency === rs.asset) {
-            rs.balance[rs.asset] = n(account.amount).value()
+         else if (account.currency.toUpperCase() === rs.asset) {
+            rs.balance[rs.asset] = n(account.available).value()
        }  
         })
         if (first_run) {
@@ -284,7 +270,7 @@ module.exports = function container (get, set, clear) {
           r.relative_strength = n(r.avg_gain).divide(r.avg_loss).value()
           r.value = n(100).subtract(n(100).divide(n(1).add(r.relative_strength))).value()
         }
-        r.ansi = n(r.value).format('0')[r.value > 70 ? 'green' : r.value < 30 ? 'red' : 'white']
+        r.ansi = n(r.value).format('0')[r.value > rs.rsi_up ? 'green' : r.value < rs.rsi_down ? 'red' : 'white']
         // first rsi, calculated from prev 14 ticks
         rs.last_rsi = JSON.parse(JSON.stringify(r))
         //console.error('first rsi', r)
@@ -307,7 +293,7 @@ module.exports = function container (get, set, clear) {
             r.relative_strength = n(r.avg_gain).divide(r.avg_loss).value()
             r.value = n(100).subtract(n(100).divide(n(1).add(r.relative_strength))).value()
           }
-          r.ansi = n(r.value).format('0')[r.value > 70 ? 'green' : r.value < 30 ? 'red' : 'white']
+          r.ansi = n(r.value).format('0')[r.value > rs.rsi_up ? 'green' : r.value < rs.rsi_down ? 'red' : 'white']
           rs.last_rsi = JSON.parse(JSON.stringify(r))
           //console.error('smooth', r.close, r.last_close, r.ansi)
         })
@@ -336,7 +322,7 @@ module.exports = function container (get, set, clear) {
         r.relative_strength = n(r.avg_gain).divide(r.avg_loss).value()
         r.value = n(100).subtract(n(100).divide(n(1).add(r.relative_strength))).value()
       }
-      r.ansi = n(r.value).format('0')[r.value > 70 ? 'green' : r.value < 30 ? 'red' : 'white']
+      r.ansi = n(r.value).format('0')[r.value > rs.rsi_up ? 'green' : r.value < rs.rsi_down ? 'red' : 'white']
       //console.error('smooth 2', r.close, r.last_close, r.ansi)
       //process.exit()
       cb()
@@ -355,11 +341,12 @@ module.exports = function container (get, set, clear) {
         rs.rsi_warning = true
       }
       else {
+//Reverse trading - change trend to opposite of RSI
         if (r.value >= rs.rsi_up) {
-          trend = 'UP'
+          trend = 'UP' //'DOWN'
         }
         else if (r.value <= rs.rsi_down) {
-          trend = 'DOWN'
+          trend = 'DOWN' //'UP'
         }
         else {
           trend = null
@@ -519,6 +506,7 @@ module.exports = function container (get, set, clear) {
         rs.num_trades || (rs.num_trades = 0)
         rs.num_trades++
         var trade = {
+//          side: rs.op,
           type: rs.op,
           asset: rs.asset,
           currency: rs.currency,
@@ -526,7 +514,7 @@ module.exports = function container (get, set, clear) {
           price: rs.market_price,
           fee: rs.fee,
           market: true,
-          size: size,
+          amount: size,
           rsi: rs.rsi.value,
           roi: rs.roi,
           roi_delta: rs.new_roi_delta,
@@ -538,15 +526,17 @@ module.exports = function container (get, set, clear) {
         trigger(trade)
         if (client) {
           var params = {
-/* 'exchange market' / 'exchange limit' are exchange orders,
-others are margin trading orders ('market' / 'limit').
-    PS. For now it's only market orders*/           
-            type: 'exchange market',
-            size: n(size).format('0.000000'),
-            product_id: rs.asset + '-' + rs.currency
-          }
-          client[rs.op](params, function (err, resp, order) {
-            onOrder(err, resp, order)
+            symbol: (rs.asset + rs.currency).toLowerCase(),
+            amount: n(size).format('0.000000'),
+            price: 0,
+            exchange: rs.exchange,
+            side: rs.op,
+            type: 'exchange market', // 'exchange market' / 'exchange limit' are exchange orders, others are margin trading orders ('market' / 'limit'). PS. For now it's only market orders
+            is_hidden: false,
+            ocoorder: false,
+            buy_price_oco: 0           
+            client.new_order(params, function (err, order) {
+              onOrder(err, order)
           })
         }
         else if (!rs.sim_warning) {
