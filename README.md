@@ -13,11 +13,18 @@
 I'm forking it to trade on Bitfinex.
 * Backfilling is working
 * Network IP is provided for easier remote viewing
-* ...heavily testing. Sim is OK. Trading not tested.
+* ...heavily testing. Sim is OK.
 
 Known issues:
 * occasionaly getting 'cannot read property 'map' of undefined' error in recorder.js or backfiller.js and exiting with code 1.
 * web console does not display trade arrows in sim. (Arrows are displayed in trade though.) 
+* Trade not working:
+  ```
+  /zenbot/node_modules/bitfinex-api-node/rest.js:67
+   return cb(new Error(result.message));
+   
+  TypeError: cb is not a function
+  ```
 
 
 ## Quick-start
