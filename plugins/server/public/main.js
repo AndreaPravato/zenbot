@@ -40,9 +40,11 @@ $('.ticker-graph').each(function () {
             .xScale(x)
             .yScale(y)
             .y(function(d) {
-                // Display the buy and sell arrows a bit above and below the price, so the price is still visible
+                // Display the buy and sell arrows a bit above and below the price, so the price is still visible //did not find which will show trade arrows in sim
                 if(d.type === 'buy') return y(d.price)+5;
                 if(d.type === 'sell') return y(d.price)-5;
+                if(d.side === 'buy') return y(d.price)+5;
+                if(d.side === 'sell') return y(d.price)-5;
                 else return y(d.price);
             });
 
@@ -381,7 +383,8 @@ $('.ticker-graph').each(function () {
                     trades = data.map(function (row) {
                         return {
                             date: new Date(+row.Time),
-                            type: row.Type,
+                            type: row.Type,  
+//                            side: row.Type,
                             price: +row.Price
                         }
                     })
@@ -396,7 +399,8 @@ $('.ticker-graph').each(function () {
             var trades = data.map(function (row) {
                 return {
                     date: new Date(+row.Time),
-                    type: row.Type,
+//                    type: row.Type,
+                    side: row.Type,
                     price: +row.Price
                 }
             })
