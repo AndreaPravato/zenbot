@@ -17,12 +17,14 @@ module.exports = function container (get, set) {
           sim_result.actions.forEach(function (action) {
             var line = [
               action.type,
+//            action.side,
               action.time,
               action.asset,
               action.currency,
               action.exchange,
               action.price,
-              action.size,
+              action.amount,
+//              action.size,
               action.rsi,
               action.roi
             ].join(',')
@@ -43,13 +45,15 @@ module.exports = function container (get, set) {
         if (run_state && run_state.actions) {
           run_state.actions.forEach(function (action) {
             var line = [
-              action.type,
+//              action.type,
+              action.side,
               action.time,
               action.asset,
               action.currency,
               action.exchange,
               action.price,
-              action.size,
+              action.amount,
+//              action.size,
               action.rsi,
               action.roi
             ].join(',')
