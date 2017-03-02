@@ -9,15 +9,16 @@ c.mongo_password = null
 //Bitfinex trading
 c.bitfinex_key = ''
 c.bitfinex_secret = ''
+c.wallet = 'exchange' // 'trading' for margin trading
+
+//TODO
+/* add option to change RSI setting in config for separate pairs.*/
 
 c.trade_log = true // log new trades as they come in.
 
 // watch these exchanges
 c.watch_exchanges = [
-  "bitfinex",
-  //"gdax", //do you need to watch others?
-  //"kraken",
-  //"poloniex"
+  "bitfinex"
 ]
 
 // selector for indicators, trading, etc
