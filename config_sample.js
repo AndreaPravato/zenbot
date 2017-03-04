@@ -40,7 +40,9 @@ c.graph_selectors = [
   "bitfinex.RRT-BTC",
   "bitfinex.RRT-USD",
   "bitfinex.LTC-BTC",
-  "bitfinex.LTC-USD"
+  "bitfinex.LTC-USD",
+  "bitfinex.DSH-USD",
+  "bitfinex.DSH-BTC"
 ]
 
 // trade logic
