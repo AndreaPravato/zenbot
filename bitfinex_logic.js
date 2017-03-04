@@ -19,18 +19,16 @@ module.exports = function container (get, set, clear) {
   var options = get('options')
   var client
   var start = new Date().getTime()
- function onOrder (err, /* resp,*/ order) {
-    if (err) return get('logger').error('order err', err, /*resp,*/ order, {feed: 'errors'})
+
+ function onOrder (err, order) {
     get('logger').info('bitfinex', c.default_selector.grey, ('order-id: ' + order.id).cyan, {data: {order: order}})
-//Bitfinex order status
   function getStatus () {
-      client.order_status(order.id, function (err, /*resp,*/ order) {
-        if (err) return get('logger').error('order status err', err)
-        if (order.is_live === false) {
-          return get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' done').cyan, {data: {order: order}})
+      client.order_status(order.id, function (err, order) {
+        if (order.is_live == false) {
+          return get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' filled.').cyan, {data: {order: order}})
         }
         else {
-          get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' ' + order.remaining_amount).cyan, {data: {order: order}})
+          get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' active. Remaining amount: ' + order.remaining_amount).cyan, {data: {order: order}})
           setTimeout(getStatus, 5000)
         }
       })
@@ -98,9 +96,9 @@ module.exports = function container (get, set, clear) {
       }
        client.wallet_balances(function (err, wallets) {
         rs.balance = {}
-// May use 'exchange' or 'trading' wallet balances
+// May use 'exchange' or 'trading' wallet balances. However margin trading may not work...read the API documentation.
+//        accounts.filter(function (account) { return account.type === 'exchange' }).forEach(function (account) { 
      var accounts =  _(wallets).filter(function (wallets) { return wallets.type === c.wallet }).map(function (account) { 
-          //console.log(rs);
           if (account.currency.toUpperCase() === rs.currency) {
             rs.balance[rs.currency] = n(account.available).value()
           }
@@ -271,6 +269,7 @@ module.exports = function container (get, set, clear) {
           r.value = n(100).subtract(n(100).divide(n(1).add(r.relative_strength))).value()
         }
         r.ansi = n(r.value).format('0')[r.value > rs.rsi_up ? 'green' : r.value < rs.rsi_down ? 'red' : 'white']
+  //      r.ansi = n(r.value).format('0')[r.value > 70 ? 'green' : r.value < 30 ? 'red' : 'white']
         // first rsi, calculated from prev 14 ticks
         rs.last_rsi = JSON.parse(JSON.stringify(r))
         //console.error('first rsi', r)
@@ -293,6 +292,7 @@ module.exports = function container (get, set, clear) {
             r.relative_strength = n(r.avg_gain).divide(r.avg_loss).value()
             r.value = n(100).subtract(n(100).divide(n(1).add(r.relative_strength))).value()
           }
+ //         r.ansi = n(r.value).format('0')[r.value > 70 ? 'green' : r.value < 30 ? 'red' : 'white']
           r.ansi = n(r.value).format('0')[r.value > rs.rsi_up ? 'green' : r.value < rs.rsi_down ? 'red' : 'white']
           rs.last_rsi = JSON.parse(JSON.stringify(r))
           //console.error('smooth', r.close, r.last_close, r.ansi)
@@ -323,6 +323,7 @@ module.exports = function container (get, set, clear) {
         r.value = n(100).subtract(n(100).divide(n(1).add(r.relative_strength))).value()
       }
       r.ansi = n(r.value).format('0')[r.value > rs.rsi_up ? 'green' : r.value < rs.rsi_down ? 'red' : 'white']
+ //     r.ansi = n(r.value).format('0')[r.value > 70 ? 'green' : r.value < 30 ? 'red' : 'white']
       //console.error('smooth 2', r.close, r.last_close, r.ansi)
       //process.exit()
       cb()
@@ -525,17 +526,12 @@ module.exports = function container (get, set, clear) {
         }
         trigger(trade)
         if (client) {
-          var params = {
-            symbol: (rs.asset + rs.currency).toLowerCase(),
-            amount: n(size).format('0.000000'),
-            price: 0,
-            exchange: rs.exchange,
-            side: rs.op,
-            type: 'exchange market', // 'exchange market' / 'exchange limit' are exchange orders, others are margin trading orders ('market' / 'limit'). PS. For now it's only market orders
-            is_hidden: false,
-            ocoorder: false,
-            buy_price_oco: 0           
-            client.new_order(params, function (err, order) {
+            var symbol = (rs.asset + rs.currency).toLowerCase()
+            var amount = n(size).format('0.000000')         
+            var exchange = rs.exchange
+            var side = rs.op
+            var type = 'exchange market'
+            client.new_order(symbol, amount.toString(), '1', exchange, side, type, false, function (err, order) {
               onOrder(err, order)
           })
         }
