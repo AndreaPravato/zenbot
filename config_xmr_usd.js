@@ -1,15 +1,7 @@
 var c = module.exports = require('./config')
 
 c.assets = [
-  "BTC",
-  "LTC",
-  "ETH",
-  "ETC",
-  "BFX",
-  "RRT",
-  "XMR",
-  "ZEC",
-  "DSH"
+  "XMR"
 ]
 c.currencies = [
   "USD",
@@ -17,4 +9,4 @@ c.currencies = [
 ]
 
 // default selector for indicators, etc
-c.default_selector = "bitfinex.BTC-USD"
+c.default_selector = "bitfinex.XMR-USD"
