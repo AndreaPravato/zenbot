@@ -122,7 +122,7 @@ Once backfill has finished (should collect about 84 days of data), run a simulat
 ./zenbot sim [--verbose]
 ```
 
-Zenbot will return you a list of virtual trades, and an ROI figure. Open the URL provided in the console (while running the server) to see the virtual trades plotted on a candlestick graph. Tweak `default_logic.js` for new trade strategies and check your results this way.
+Zenbot will return you a list of virtual trades, and an ROI figure. Open the URL provided in the console (while running the server) to see the virtual trades plotted on a candlestick graph. Tweak `bitfinex_logic.js` for new trade strategies and check your results this way.
 
 Example simulation result: https://gist.github.com/carlos8f/afcc18ba0e1f422b1f3b1f67a3b05c8e
 
