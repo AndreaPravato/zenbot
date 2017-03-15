@@ -20,10 +20,12 @@ module.exports = function container (get, set, clear) {
   var client
   var start = new Date().getTime()
 
- function onOrder (err, order) {
-    get('logger').info('bitfinex', c.default_selector.grey, ('order-id: ' + order.id).cyan, {data: {order: order}})
+function onOrder (err, order) {
+      if (err) return get('logger').error('order err', err, {feed: 'errors'})
+      get('logger').info('bitfinex', c.default_selector.grey, ('order-id: ' + order.id).cyan, {data: {order: order}})
   function getStatus () {
       client.order_status(order.id, function (err, order) {
+        if (err) return get('logger').error('Order Status err', err)
         if (order.is_live == false) {
           return get('logger').info('bitfinex', c.default_selector.grey, ('order ' + order.id + ' filled.').cyan, {data: {order: order}})
         }
@@ -95,6 +97,7 @@ module.exports = function container (get, set, clear) {
         client = new BFX.APIRest(c.bitfinex_key, c.bitfinex_secret)
       }
        client.wallet_balances(function (err, wallets) {
+        if (err) get('logger').error('Balances err', err, wallets, {feed: 'errors'})
         rs.balance = {}
 // May use 'exchange' or 'trading' wallet balances. However margin trading may not work...read the API documentation.
 //        accounts.filter(function (account) { return account.type === 'exchange' }).forEach(function (account) { 
