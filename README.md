@@ -16,7 +16,6 @@ I'm forking it to trade on Bitfinex.
 * Trading is working
 
 Known issues:
-* occasionaly getting 'cannot read property 'map' of undefined' error in recorder.js or backfiller.js and exiting with code 1. I suppose problem is due to network error an API.
 * web console does not display trade arrows and web title is '$1 - zenbot'.
 
 
