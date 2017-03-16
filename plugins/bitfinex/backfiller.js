@@ -61,7 +61,16 @@ module.exports = function container (get, set, clear) {
         }
         var uri = x.rest_url + '/trades/' + product.id + '?limit_trades=' + x.backfill_limit + (s.backfiller_id ? '&timestamp=' + s.backfiller_id : '')
         //get('logger').info(z(c.max_slug_length, 'backfiller GET', ' '), uri.grey)
-        request(uri, {headers: {'User-Agent': USER_AGENT}}, function (err, resp, result) {
+      request(uri, {headers: {'User-Agent': USER_AGENT}}, function (err, resp, result) {
+          if (err) {
+            get('logger').error(x.name + ' backfiller err', err, {feed: 'errors'})
+            return retry()
+          }
+          if (resp.statusCode !== 200 || toString.call(result) !== '[object Array]') {
+            console.error(result)
+            get('logger').error(x.name + ' non-200 status: ' + resp.statusCode, {feed: 'errors'})
+            return retry()
+          }
           withResult(result)
         })
       }
