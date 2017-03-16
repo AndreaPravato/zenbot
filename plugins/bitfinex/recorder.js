@@ -53,6 +53,17 @@ module.exports = function container (get, set, clear) {
         var uri = x.rest_url + '/trades/' + product.id + (s.recorder_id ? '?timestamp=' + s.recorder_id : '')
         //get('logger').info(x.name, uri.grey)
         request(uri, {headers: {'User-Agent': USER_AGENT}}, function (err, resp, result) {
+         if (err) {
+ //         console.log(err, resp, result)
+            get('logger').error(x.name + ' recorder err', err, {public: false})
+            return retry()
+          } 
+          if (resp.statusCode !== 200 || toString.call(result) !== '[object Array]') {
+            //console.error(result)
+            get('logger').error(x.name + ' non-200 status: ' + resp.statusCode, {feed: 'errors'})
+            return retry()
+         }
+          //console.error('result', result)
           withResult(result)
         })
       }
