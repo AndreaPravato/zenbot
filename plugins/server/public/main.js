@@ -383,8 +383,8 @@ $('.ticker-graph').each(function () {
                     trades = data.map(function (row) {
                         return {
                             date: new Date(+row.Time),
-                            type: row.Type,  
-//                            side: row.Type,
+//                            type: row.Type,  
+                            side: row.Type,
                             price: +row.Price
                         }
                     })
@@ -399,8 +399,8 @@ $('.ticker-graph').each(function () {
             var trades = data.map(function (row) {
                 return {
                     date: new Date(+row.Time),
-//                    type: row.Type,
-                    side: row.Type,
+                    type: row.Type,
+//                    side: row.Type,
                     price: +row.Price
                 }
             })
