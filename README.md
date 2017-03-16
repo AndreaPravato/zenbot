@@ -14,9 +14,10 @@ I'm forking it to trade on Bitfinex.
 * Backfilling is working
 * Network IP is provided for easier remote viewing
 * Trading is working
+* sim mode tradearrows are shown and the title is correct in web log.
 
 Known issues:
-* web console does not display trade arrows and web title is '$1 - zenbot'.
+* web log does not display trade arrows and web title is '$1 - zenbot' in trade mode.
 
 
 ## Quick-start
