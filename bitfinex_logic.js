@@ -51,10 +51,10 @@ function onOrder (err, order) {
         get('logger').info('trader', c.default_selector.grey, get_tick_str(tick.id), 'running logic'.grey, rs.asset.grey, rs.currency.grey, {feed: 'trader'})
       }
       rs.rsi_query_limit = 100 // RSI initial value lookback
-      rs.rsi_periods = 7 // RSI smoothing factor 26 14 7
+      rs.rsi_periods = 26 // RSI smoothing factor 26 14 7
       rs.rsi_period = '5m' // RSI tick size 5m
-      rs.rsi_up = 60 // upper RSI threshold 65 80
-      rs.rsi_down = 20 // lower RSI threshold 20 25 28
+      rs.rsi_up = 62 // upper RSI threshold 65 80
+      rs.rsi_down = 22 // lower RSI threshold 20 25 28
       rs.check_period = '1m' // speed to trigger actions at
       rs.selector = 'data.trades.' + c.default_selector
       rs.trade_pct = 0.98 // trade % of current balance
@@ -68,8 +68,8 @@ function onOrder (err, order) {
       if (!rs.product) return cb(new Error('no product for ' + c.default_selector))
       rs.min_trade = n(rs.product.min_size).multiply(1).value()
       rs.sim_start_balance = 1000
-      rs.min_double_wait = 86400000 * 1 // wait in ms after action before doing same action 15m = 900000; 30m = 1800000; 1h = 3600000; 4h = 14400000; 6h = 21600000; 12h = 43200000; 24h = 86400000; 
-      rs.min_reversal_wait = 86400000 * 0.75 // wait in ms after action before doing opposite action
+      rs.min_double_wait = 3600 * 1 // wait in ms after action before doing same action 15m = 900000; 30m = 1800000; 1h = 3600000; 4h = 14400000; 6h = 21600000; 12h = 43200000; 24h = 86400000; 
+      rs.min_reversal_wait = 3600 * 0.75 // wait in ms after action before doing opposite action
       rs.min_performance = -0.015 // abort trades with lower performance score
       if (first_run) {
         delete rs.real_trade_warning
@@ -347,10 +347,10 @@ function onOrder (err, order) {
       else {
 //Reverse trading - change trend to opposite of RSI
         if (r.value >= rs.rsi_up) {
-          trend = 'UP' //'DOWN'
+          trend = 'DOWN' //original 'UP'
         }
         else if (r.value <= rs.rsi_down) {
-          trend = 'DOWN' //'UP'
+          trend = 'UP' //original 'DOWN'
         }
         else {
           trend = null
